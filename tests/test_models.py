@@ -5,7 +5,7 @@ from src.models import Product, Category
 @pytest.fixture(autouse=True)
 def reset_category_counters():
     """
-    Фикстура для сброса счетчиков Category перед каждым тестом
+    Сбрасывает счетчики Category перед каждым тестом
     """
     Category.category_count = 0
     Category.product_count = 0
@@ -34,8 +34,11 @@ def test_category_initialization(sample_products):
 
     assert category.name == "Электроника"
     assert category.description == "Гаджеты"
-    assert len(category.products) == 3
-    assert isinstance(category.products[0], Product)
+    # теперь products возвращает строку
+    products_str = category.products
+    assert isinstance(products_str, str)
+    for p in sample_products:
+        assert p.name in products_str
 
 
 def test_category_count_increases(sample_products):
@@ -58,3 +61,38 @@ def test_product_count_increases(sample_products):
         Product("Холодильник", "Большой холодильник", 49999.90, 3)
     ])
     assert Category.product_count == 4
+
+
+def test_add_product_increases_count(sample_products):
+    category = Category("Электроника", "Гаджеты", sample_products)
+    initial_count = Category.product_count
+
+    new_product = Product("Смарт-часы", "Фитнес-браслет", 9999.99, 20)
+    category.add_product(new_product)
+
+    assert Category.product_count == initial_count + 1
+    assert "Смарт-часы" in category.products
+
+
+def test_new_product_from_dict():
+    data = {
+        "name": "Мышь",
+        "description": "Игровая мышь",
+        "price": 2499.90,
+        "quantity": 50
+    }
+    product = Product.new_product(data)
+
+    assert isinstance(product, Product)
+    assert product.name == "Мышь"
+    assert product.price == 2499.90
+    assert product.quantity == 50
+
+
+def test_invalid_price_does_not_change_value(capsys):
+    product = Product("Клавиатура", "Механическая", 4999.99, 15)
+
+    product.price = -1000  # некорректное значение
+    captured = capsys.readouterr()
+    assert "Цена не должна быть нулевая или отрицательная" in captured.out
+    assert product.price == 4999.99

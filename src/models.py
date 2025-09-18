@@ -8,8 +8,28 @@ class Product:
         """
         self.name: str = name
         self.description: str = description
-        self.price: float = price
+        self.__price: float = 0.0
+        self.price = price
         self.quantity: int = quantity
+
+
+    @property
+    def price(self) -> float:
+        """
+        Геттер для получения цены товара.
+        """
+        return self.__price
+
+
+    @price.setter
+    def price(self, value: float) -> None:
+        """
+        Сеттер для установки цены товара с валидацией.
+        """
+        if value <= 0:
+            print("Цена не должна быть нулевая или отрицательная")
+        else:
+            self.__price = value
 
 
     @classmethod
@@ -36,7 +56,7 @@ class Category:
         """
         self.name: str = name
         self.description: str = description
-        self.__products: List[Product] = products  # Приватный атрибут
+        self.__products: List[Product] = products
 
         Category.category_count += 1
         Category.product_count += len(products)
