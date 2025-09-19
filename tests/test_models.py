@@ -34,11 +34,14 @@ def test_category_initialization(sample_products):
 
     assert category.name == "Электроника"
     assert category.description == "Гаджеты"
-    # теперь products возвращает строку
+
     products_str = category.products
     assert isinstance(products_str, str)
+
     for p in sample_products:
         assert p.name in products_str
+        assert str(p.price) in products_str
+        assert str(p.quantity) in products_str
 
 
 def test_category_count_increases(sample_products):
@@ -72,6 +75,14 @@ def test_add_product_increases_count(sample_products):
 
     assert Category.product_count == initial_count + 1
     assert "Смарт-часы" in category.products
+    assert "9999.99 руб." in category.products
+    assert "20 шт." in category.products
+
+
+def test_add_invalid_product_raises_type_error(sample_products):
+    category = Category("Электроника", "Гаджеты", sample_products)
+    with pytest.raises(TypeError):
+        category.add_product("не продукт")  # строка вместо Product
 
 
 def test_new_product_from_dict():
@@ -89,10 +100,20 @@ def test_new_product_from_dict():
     assert product.quantity == 50
 
 
-def test_invalid_price_does_not_change_value(capsys):
+@pytest.mark.parametrize("invalid_price", [0, -1, -1000])
+def test_invalid_price_does_not_change_value(capsys, invalid_price):
     product = Product("Клавиатура", "Механическая", 4999.99, 15)
 
-    product.price = -1000  # некорректное значение
+    product.price = invalid_price  # некорректное значение
     captured = capsys.readouterr()
+
     assert "Цена не должна быть нулевая или отрицательная" in captured.out
-    assert product.price == 4999.99
+    assert product.price == 4999.99  # цена осталась прежней
+
+
+def test_products_string_format(sample_products):
+    category = Category("Электроника", "Гаджеты", sample_products)
+    products_str = category.products.split("\n")
+
+    for line, p in zip(products_str, sample_products):
+        assert line == f"{p.name}, {p.price} руб. Остаток: {p.quantity} шт."
