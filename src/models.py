@@ -12,14 +12,12 @@ class Product:
         self.price = price
         self.quantity: int = quantity
 
-
     @property
     def price(self) -> float:
         """
         Геттер для получения цены товара.
         """
         return self.__price
-
 
     @price.setter
     def price(self, value: float) -> None:
@@ -30,7 +28,6 @@ class Product:
             print("Цена не должна быть нулевая или отрицательная")
         else:
             self.__price = value
-
 
     @classmethod
     def new_product(cls, product_data: Dict[str, any]) -> 'Product':
@@ -49,7 +46,6 @@ class Category:
     category_count: int = 0
     product_count: int = 0
 
-
     def __init__(self, name: str, description: str, products: List[Product]):
         """
         Класс для описания категории товаров.
@@ -61,14 +57,16 @@ class Category:
         Category.category_count += 1
         Category.product_count += len(products)
 
-
     def add_product(self, product: Product) -> None:
         """
         Добавляет товар в категорию.
+        Принимает только объекты класса Product или его наследников.
         """
+        if not isinstance(product, Product):
+            raise TypeError("Можно добавлять только объекты класса Product или его наследников")
+
         self.__products.append(product)
         Category.product_count += 1
-
 
     @property
     def products(self) -> str:
