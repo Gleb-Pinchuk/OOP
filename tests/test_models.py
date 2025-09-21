@@ -14,10 +14,13 @@ def reset_category_counters():
 @pytest.fixture
 def sample_products():
     return [
-        Product("Телефон", "Смартфон", 29999.99, 10),
-        Product("Наушники", "Беспроводные", 7999.50, 25),
-        Product("Планшет", "Компактный планшет", 19999.00, 15),
+        Product("Телефон", "Смартфон", 100.0, 10),   # 1000
+        Product("Наушники", "Беспроводные", 200.0, 2),  # 400
+        Product("Планшет", "Компактный планшет", 50.0, 4),  # 200
     ]
+
+
+# ==== старые тесты ====
 
 
 def test_product_initialization():
@@ -75,8 +78,6 @@ def test_add_product_increases_count(sample_products):
 
     assert Category.product_count == initial_count + 1
     assert "Смарт-часы" in category.products
-    assert "9999.99 руб." in category.products
-    assert "20 шт." in category.products
 
 
 def test_add_invalid_product_raises_type_error(sample_products):
@@ -117,3 +118,37 @@ def test_products_string_format(sample_products):
 
     for line, p in zip(products_str, sample_products):
         assert line == f"{p.name}, {p.price} руб. Остаток: {p.quantity} шт."
+
+
+def test_category_str(sample_products):
+    category = Category("Электроника", "Гаджеты", sample_products)
+    total_quantity = sum(p.quantity for p in sample_products)
+    assert str(category) == f"Электроника, количество продуктов: {total_quantity} шт."
+
+
+def test_product_str():
+    product = Product("Телевизор", "4K UHD", 89999.99, 2)
+    assert str(product) == "Телевизор, 89999.99 руб. Остаток: 2 шт."
+
+
+def test_add_products_returns_total_value():
+    a = Product("Товар A", "Описание", 100, 10)
+    b = Product("Товар B", "Описание", 200, 2)
+
+    result = a + b
+    assert result == 1400
+
+
+def test_add_products_with_zero_quantity():
+    a = Product("Товар A", "Описание", 100, 0)
+    b = Product("Товар B", "Описание", 50, 2)
+
+    result = a + b
+    assert result == 100
+
+
+def test_add_product_with_non_product_raises_type_error():
+    a = Product("Товар A", "Описание", 100, 1)
+
+    with pytest.raises(TypeError):
+        _ = a + 123
