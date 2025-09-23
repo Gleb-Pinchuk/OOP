@@ -52,7 +52,7 @@ def test_product_count_increases(sample_products):
 
 
 def test_product_creation_prints_log(capsys):
-    product = Product("Мышь", "Игровая мышь", 2499.90, 50)
+    Product("Мышь", "Игровая мышь", 2499.90, 50)
     captured = capsys.readouterr()
     assert "Product" in captured.out
     assert "Мышь" in captured.out
@@ -60,7 +60,7 @@ def test_product_creation_prints_log(capsys):
 
 
 def test_smartphone_creation_prints_log(capsys):
-    phone = Smartphone("iPhone", "Смартфон", 100000, 2, "A16", "14 Pro", 256, "черный")
+    Smartphone("iPhone", "Смартфон", 100000, 2, "A16", "14 Pro", 256, "черный")
     captured = capsys.readouterr()
     assert "Smartphone" in captured.out
     assert "iPhone" in captured.out
@@ -68,7 +68,7 @@ def test_smartphone_creation_prints_log(capsys):
 
 
 def test_lawngrass_creation_prints_log(capsys):
-    grass = LawnGrass("Газон", "Семена", 500, 10, "Россия", 30, "зеленый")
+    LawnGrass("Газон", "Семена", 500, 10, "Россия", 30, "зеленый")
     captured = capsys.readouterr()
     assert "LawnGrass" in captured.out
     assert "Газон" in captured.out
@@ -104,3 +104,48 @@ def test_add_valid_inherited_products_to_category():
     category.add_product(grass)
     assert "Samsung" in category.products
     assert "Газон" in category.products
+
+
+def test_price_setter_validation(capsys):
+    product = Product("Тест", "Описание", 100, 5)
+    product.price = -10  # некорректная цена
+    captured = capsys.readouterr()
+    assert "Цена не должна быть нулевая или отрицательная" in captured.out
+    assert product.price == 100  # значение не изменилось
+
+
+def test_product_str():
+    product = Product("Телевизор", "4K", 30000, 2)
+    assert str(product) == "Телевизор, 30000 руб. Остаток: 2 шт."
+
+
+def test_smartphone_str():
+    phone = Smartphone("iPhone", "Флагман", 100000, 1, "A16", "14 Pro", 256, "черный")
+    result = str(phone)
+    assert "iPhone" in result
+    assert "14 Pro" in result
+    assert "256 ГБ" in result
+
+
+def test_lawngrass_str():
+    grass = LawnGrass("Газон", "Семена", 500, 10, "Россия", 30, "зеленый")
+    result = str(grass)
+    assert "Газон" in result
+    assert "30 дней" in result
+
+
+def test_new_product_from_dict():
+    data = {"name": "Мышь", "description": "Игровая", "price": 2500, "quantity": 5}
+    product = Product.new_product(data)
+    assert isinstance(product, Product)
+    assert product.name == "Мышь"
+    assert product.price == 2500
+    assert product.quantity == 5
+
+
+def test_category_str_and_products(sample_products):
+    category = Category("Электроника", "Гаджеты", sample_products)
+    result = str(category)
+    assert "Электроника" in result
+    assert "количество продуктов" in result
+    assert "Телефон" in category.products
