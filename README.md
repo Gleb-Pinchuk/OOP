@@ -9,7 +9,8 @@
 1. Клонируйте репозиторий:
 
    ```bash
-https://github.com/Gleb-Pinchuk/OOP/pull/6
+
+   https://github.com/Gleb-Pinchuk/OOP/pull/6
 
 2. Установите зависимости:
    pip install -r requirements.txt
