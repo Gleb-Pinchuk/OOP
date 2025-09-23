@@ -2,15 +2,14 @@
 
 ## Описание
 
-Проект на Python,  Включает классы `Product` и `Category` с соответствующими тестами.
+Реализованы базовые и наследуемые классы для описания товаров и категорий.
 
 ## Установка
 
 1. Клонируйте репозиторий:
 
    ```bash
-   git clone https://github.com/Gleb-Pinchuk/OOP.git
-   cd OOP
+https://github.com/Gleb-Pinchuk/OOP/pull/6
 
 2. Установите зависимости:
    pip install -r requirements.txt
