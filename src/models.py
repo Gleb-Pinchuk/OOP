@@ -13,11 +13,8 @@ class InitLoggerMixin:
         try:
             print(f"{self.__class__.__name__}({', '.join(parts)})")
         except Exception:
-            # Безопасный fallback
             print(f"Создан объект {self.__class__.__name__}")
-        # Передаём дальше по MRO
         super().__init__(*args, **kwargs)
-
 
     def __repr__(self) -> str:
         parts: List[str] = []
@@ -26,9 +23,7 @@ class InitLoggerMixin:
                 parts.append(repr(getattr(self, a)))
         extra_parts: List[str] = []
         for k, v in vars(self).items():
-            if k.startswith("_"):
-                continue
-            if k in ("name", "description", "price", "quantity"):
+            if k.startswith("_") or k in ("name", "description", "price", "quantity"):
                 continue
             extra_parts.append(f"{k}={v!r}")
         all_parts = ", ".join(parts + extra_parts)
@@ -42,17 +37,17 @@ class BaseProduct(ABC):
     """
 
     def __init__(self, name: str, description: str, price: float, quantity: int):
+        if quantity <= 0:
+            raise ValueError("Товар с нулевым количеством не может быть добавлен")
         self.name: str = name
         self.description: str = description
         self._price: float = 0.0
         self.price = price
         self.quantity: int = quantity
 
-
     @property
     def price(self) -> float:
         return self._price
-
 
     @price.setter
     def price(self, value: float) -> None:
@@ -61,11 +56,9 @@ class BaseProduct(ABC):
         else:
             self._price = value
 
-
     @abstractmethod
     def __str__(self) -> str:
         ...
-
 
     @abstractmethod
     def __add__(self, other: object) -> float:
@@ -77,10 +70,8 @@ class Product(InitLoggerMixin, BaseProduct):
     Конкретный продукт — наследует mixin и абстрактный класс.
     """
 
-
     def __str__(self) -> str:
         return f"{self.name}, {self.price} руб. Остаток: {self.quantity} шт."
-
 
     def __add__(self, other: object) -> float:
         if not isinstance(other, BaseProduct):
@@ -88,7 +79,6 @@ class Product(InitLoggerMixin, BaseProduct):
         if type(self) is not type(other):
             raise TypeError("Складывать можно только товары одного класса продуктов")
         return self.price * self.quantity + other.price * other.quantity
-
 
     @classmethod
     def new_product(cls, product_data: Dict[str, any]) -> "Product":
@@ -109,7 +99,6 @@ class Smartphone(Product):
         self.memory: int = memory
         self.color: str = color
 
-
     def __str__(self) -> str:
         return (f"{self.name} ({self.model}, {self.memory} ГБ, {self.color}), "
                 f"{self.price} руб. Остаток: {self.quantity} шт.")
@@ -123,7 +112,6 @@ class LawnGrass(Product):
         self.germination_period: int = germination_period
         self.color: str = color
 
-
     def __str__(self) -> str:
         return (f"{self.name} ({self.color}, {self.country}, "
                 f"срок прорастания {self.germination_period} дней), "
@@ -133,7 +121,6 @@ class LawnGrass(Product):
 class Category:
     category_count: int = 0
     product_count: int = 0
-
 
     def __init__(self, name: str, description: str, products: List[Product]):
         self.name: str = name
@@ -145,26 +132,30 @@ class Category:
 
         Category.category_count += 1
 
-
     def add_product(self, product: Product) -> None:
-        """
-        Добавляет товар в категорию.
-        """
         if not isinstance(product, BaseProduct):
             raise TypeError("Можно добавлять только объекты класса Product или его наследников")
-
         if not issubclass(type(product), BaseProduct):
             raise TypeError("Объект должен быть наследником класса BaseProduct")
-
         self.__products.append(product)
         Category.product_count += 1
-
 
     @property
     def products(self) -> str:
         return "\n".join(str(product) for product in self.__products)
 
-
     def __str__(self) -> str:
         total_quantity = sum(product.quantity for product in self.__products)
         return f"{self.name}, количество продуктов: {total_quantity} шт."
+
+    def average_price(self) -> float:
+        """
+        Возвращает среднюю цену всех товаров в категории.
+        Если товаров нет, возвращает 0.
+        """
+        try:
+            total_price = sum(product.price for product in self.__products)
+            avg_price = total_price / len(self.__products)
+            return avg_price
+        except ZeroDivisionError:
+            return 0.0

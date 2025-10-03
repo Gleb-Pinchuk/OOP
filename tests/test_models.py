@@ -108,10 +108,10 @@ def test_add_valid_inherited_products_to_category():
 
 def test_price_setter_validation(capsys):
     product = Product("Тест", "Описание", 100, 5)
-    product.price = -10  # некорректная цена
+    product.price = -10
     captured = capsys.readouterr()
     assert "Цена не должна быть нулевая или отрицательная" in captured.out
-    assert product.price == 100  # значение не изменилось
+    assert product.price == 100
 
 
 def test_product_str():
@@ -149,3 +149,19 @@ def test_category_str_and_products(sample_products):
     assert "Электроника" in result
     assert "количество продуктов" in result
     assert "Телефон" in category.products
+
+
+def test_product_zero_quantity_raises_value_error():
+    with pytest.raises(ValueError, match="Товар с нулевым количеством не может быть добавлен"):
+        Product("Новый товар", "Описание", 100, 0)
+
+
+def test_average_price_non_empty_category(sample_products):
+    category = Category("Электроника", "Гаджеты", sample_products)
+    expected_avg = (100 + 200 + 50) / 3
+    assert category.average_price() == expected_avg
+
+
+def test_average_price_empty_category():
+    category = Category("Пустая", "Нет товаров", [])
+    assert category.average_price() == 0.0
